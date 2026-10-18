@@ -1,6 +1,5 @@
-const { contextBridge, ipcRenderer } = require('electron');
-
-contextBridge.exposeInMainWorld('jarvis', {
-  openApp: (name) => ipcRenderer.invoke('open-app', name),
-  openUrl: (url) => ipcRenderer.invoke('open-url', url)
+const {contextBridge,ipcRenderer}=require('electron');
+contextBridge.exposeInMainWorld('jarvis',{
+ getInitial:()=>ipcRenderer.invoke('jarvis:get-initial'),runCommand:c=>ipcRenderer.invoke('jarvis:command',c),openApp:n=>ipcRenderer.invoke('jarvis:open-app',n),openUrl:u=>ipcRenderer.invoke('jarvis:open-url',u),saveNote:t=>ipcRenderer.invoke('jarvis:save-note',t),deleteNote:id=>ipcRenderer.invoke('jarvis:delete-note',id),addReminder:d=>ipcRenderer.invoke('jarvis:add-reminder',d),deleteReminder:id=>ipcRenderer.invoke('jarvis:delete-reminder',id),saveSettings:s=>ipcRenderer.invoke('jarvis:save-settings',s),pickPython:()=>ipcRenderer.invoke('jarvis:pick-python'),copyText:t=>ipcRenderer.invoke('jarvis:copy-text',t),
+ on:(channel,callback)=>{const allowed=['jarvis:activity','jarvis:notes','jarvis:reminders','jarvis:user-command','jarvis:reminder-fired','jarvis:pick-python-request'];if(!allowed.includes(channel)||typeof callback!=='function')return()=>{};const listener=(_e,d)=>callback(d);ipcRenderer.on(channel,listener);return()=>ipcRenderer.removeListener(channel,listener);}
 });

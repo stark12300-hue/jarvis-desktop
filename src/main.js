@@ -1,67 +1,16 @@
-const { app, BrowserWindow, ipcMain, shell } = require('electron');
+const { app, BrowserWindow, session, Tray, Menu, nativeImage } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
-
-function createWindow() {
-  const window = new BrowserWindow({
-    width: 1100,
-    height: 760,
-    minWidth: 760,
-    minHeight: 560,
-    title: 'JARVIS',
-    backgroundColor: '#050b16',
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false
-    }
-  });
-  window.loadFile(path.join(__dirname, 'index.html'));
+const { setupAssistant } = require('./assistant');
+let mainWindow, tray;
+function showWindow(){if(!mainWindow)createWindow();else{if(mainWindow.isMinimized())mainWindow.restore();mainWindow.show();mainWindow.focus();}}
+function createTray(){
+ const png='iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAABBUlEQVR4nM2XwRWDMAiGMVN0CE9O5K0z9eZEnhyiW9hT05QAASRN//e8GMz/CdEQgMGarA/cn+cpjT9uk2lOdXDL2AvSDMLG2zKL8et+mEDEwdK8ZSyBSBDswNvcasyBcBCpp3k5B7eGKoBIcw3EV1okc7y4uDhJVDnIEmjMufvrfuRLowzgTb3WqJy7LIUqA9QkUUoA9rfHcVeyYM4AJwtEKTeA9kvpBsBB/BQgAiJkDVyBCFuEwwG8WUgAn3+z91PCENsys0B4PwgvgTUTGSAqC5Lcu2FPVW1Sj4YEgG/Nqgz0KIXUF5IliIRoNaX/25ZTEBqQ0IOJBNJS2NHMCmI9nA7XCx5YmS5ylKe3AAAAAElFTkSuQmCC';
+ try{tray=new Tray(nativeImage.createFromBuffer(Buffer.from(png,'base64')));tray.setToolTip('JARVIS is running');tray.setContextMenu(Menu.buildFromTemplate([{label:'Show JARVIS',click:showWindow},{type:'separator'},{label:'Quit JARVIS',click:()=>{app.isQuitting=true;app.quit();}}]));tray.on('click',showWindow);}catch(e){console.error('Tray unavailable:',e.message);}
 }
-
-app.whenReady().then(() => {
-  createWindow();
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
-});
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
-
-// Only named, allowlisted applications can be launched; arbitrary shell commands are not exposed.
-ipcMain.handle('open-app', async (_event, appName) => {
-  const key = String(appName || '').toLowerCase();
-  const macApps = { chrome: 'Google Chrome', vscode: 'Visual Studio Code', finder: 'Finder', safari: 'Safari' };
-  const windowsApps = { chrome: 'chrome', vscode: 'code', explorer: 'explorer', edge: 'msedge' };
-
-  try {
-    if (process.platform === 'darwin') {
-      const target = macApps[key];
-      if (!target) return { ok: false, message: 'This app is not in the safe allowlist.' };
-      spawn('open', ['-a', target], { detached: true, stdio: 'ignore' }).unref();
-    } else if (process.platform === 'win32') {
-      const target = windowsApps[key];
-      if (!target) return { ok: false, message: 'This app is not in the safe allowlist.' };
-      spawn('cmd', ['/c', 'start', '', target], { detached: true, stdio: 'ignore', windowsHide: true }).unref();
-    } else {
-      return { ok: false, message: 'This starter currently supports macOS and Windows.' };
-    }
-    return { ok: true, message: 'Opening ' + key + '…' };
-  } catch {
-    return { ok: false, message: 'Could not open that app. Check that it is installed.' };
-  }
-});
-
-ipcMain.handle('open-url', async (_event, url) => {
-  try {
-    const parsed = new URL(String(url));
-    if (!['https:', 'http:'].includes(parsed.protocol)) {
-      return { ok: false, message: 'Only HTTP and HTTPS URLs are allowed.' };
-    }
-    await shell.openExternal(parsed.toString());
-    return { ok: true, message: 'Opening website…' };
-  } catch {
-    return { ok: false, message: 'Enter a valid website URL.' };
-  }
-});
+function createWindow(){
+ mainWindow=new BrowserWindow({width:1240,height:900,minWidth:820,minHeight:650,title:'JARVIS',backgroundColor:'#050b16',show:false,webPreferences:{preload:path.join(__dirname,'preload.js'),contextIsolation:true,nodeIntegration:false,sandbox:true,backgroundThrottling:false}});
+ mainWindow.loadFile(path.join(__dirname,'index.html'));mainWindow.once('ready-to-show',()=>mainWindow&&mainWindow.show());
+ mainWindow.on('close',e=>{if(!app.isQuitting){e.preventDefault();mainWindow.hide();}});mainWindow.on('closed',()=>{mainWindow=null;});
+}
+app.whenReady().then(async()=>{session.defaultSession.setPermissionRequestHandler((_w,p,cb)=>cb(p==='media'||p==='notifications'));await setupAssistant();createWindow();createTray();}).catch(e=>console.error('JARVIS startup failed:',e));
+app.on('activate',showWindow);app.on('before-quit',()=>{app.isQuitting=true;if(tray)tray.destroy();});app.on('window-all-closed',()=>{});

@@ -1,41 +1,6 @@
 {
-  "name": "jarvis-desktop",
-  "version": "0.1.0",
-  "description": "Cross-platform JARVIS-style desktop assistant starter",
-  "main": "src/main.js",
-  "scripts": {
-    "start": "electron .",
-    "dist:mac": "electron-builder --mac dmg --publish never",
-    "dist:win": "electron-builder --win nsis --publish never"
-  },
-  "devDependencies": {
-    "electron": "^38.2.0",
-    "electron-builder": "^26.0.12"
-  },
-  "build": {
-    "appId": "com.jarvis.assistant",
-    "productName": "JARVIS",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "src/**/*",
-      "package.json"
-    ],
-    "mac": {
-      "target": [
-        "dmg"
-      ],
-      "category": "public.app-category.productivity"
-    },
-    "win": {
-      "target": [
-        "nsis"
-      ]
-    },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
-  }
+"name":"jarvis-desktop","version":"0.2.0","description":"Cross-platform JARVIS voice assistant and Android companion","main":"src/main.js",
+"scripts":{"start":"electron .","check":"node --check src/main.js && node --check src/assistant.js && node --check src/preload.js && node --check src/renderer.js && node --check src/mobile.js","dist:mac":"electron-builder --mac dmg --publish never","dist:win":"electron-builder --win nsis --publish never"},
+"dependencies":{"express":"^4.21.2","qrcode":"^1.5.4"},"devDependencies":{"electron":"^38.2.0","electron-builder":"^26.0.12"},
+"build":{"appId":"com.jarvis.assistant","productName":"JARVIS","directories":{"output":"dist"},"files":["src/**/*","package.json"],"mac":{"target":["dmg"],"category":"public.app-category.productivity"},"win":{"target":["nsis"]},"nsis":{"oneClick":false,"allowToChangeInstallationDirectory":true}}
 }
