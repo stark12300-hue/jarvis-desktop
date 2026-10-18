@@ -87,7 +87,13 @@ async function generateGeminiSpeech(text){
   const data=await response.json();if(!response.ok)throw Error(data.error?.message||'Gemini TTS error '+response.status);
   const audio=data.output_audio?.data||data.outputAudio?.data||data.steps?.flatMap(s=>s.content||[]).find(p=>p.type==='audio')?.data;
   if(!audio)throw Error('Gemini did not return audio data.');
-  return{ok:true,audio,mimeType:'audio/wav'};
+  let pcm=Buffer.from(audio,'base64'),wav=pcm;
+  // Gemini TTS may return raw 24 kHz, mono, 16-bit PCM. Wrap it in a WAV container for browser playback.
+  if(pcm.length<12||pcm.subarray(0,4).toString('ascii')!=='RIFF'){
+   const header=Buffer.alloc(44),sampleRate=24000,channels=1,bits=16,byteRate=sampleRate*channels*bits/8,blockAlign=channels*bits/8;
+   header.write('RIFF',0);header.writeUInt32LE(36+pcm.length,4);header.write('WAVE',8);header.write('fmt ',12);header.writeUInt32LE(16,16);header.writeUInt16LE(1,20);header.writeUInt16LE(channels,22);header.writeUInt32LE(sampleRate,24);header.writeUInt32LE(byteRate,28);header.writeUInt16LE(blockAlign,32);header.writeUInt16LE(bits,34);header.write('data',36);header.writeUInt32LE(pcm.length,40);wav=Buffer.concat([header,pcm]);
+  }
+  return{ok:true,audio:wav.toString('base64'),mimeType:'audio/wav'};
  }catch(e){return{ok:false,message:'Gemini voice failed: '+e.message};}
 }
 function ips(){const a=[];for(const rows of Object.values(os.networkInterfaces()))for(const n of rows||[])if(n.family==='IPv4'&&!n.internal&&!n.address.startsWith('169.254.'))a.push(n.address);return[...new Set(a)];}
