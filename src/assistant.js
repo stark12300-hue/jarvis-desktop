@@ -1,7 +1,7 @@
 const {app,BrowserWindow,ipcMain,shell,safeStorage,Notification,dialog,clipboard}=require('electron');
 const path=require('path'),fs=require('fs'),os=require('os'),crypto=require('crypto');
 const {spawn}=require('child_process'),express=require('express'),QRCode=require('qrcode');
-const PORT=43127,DEFAULTS={aiMode:'local',localModel:'llama3.2',cloudModel:'gemini-3.8-flash',voiceLanguage:'auto',wakeMode:'low',wakeOnLaunch:false,autoStart:false,speakResponses:true};
+const PORT=43127,DEFAULTS={aiMode:'gemini',localModel:'llama3.2',cloudModel:'gemini-3.8-flash',voiceLanguage:'auto',wakeMode:'low',wakeOnLaunch:false,autoStart:false,speakResponses:true,providerMigrationV1:true};
 let dataPath,keyPath,mobileServer,mobilePort=PORT;
 const pairToken=crypto.randomBytes(32).toString('hex'),timers=new Map();
 let store={settings:{...DEFAULTS},notes:[],reminders:[],history:[]};
@@ -9,7 +9,7 @@ function windowRef(){return BrowserWindow.getAllWindows().find(w=>!w.isDestroyed
 function send(ch,d){const w=windowRef();if(w)w.webContents.send(ch,d);}
 function activity(text,type='info'){send('jarvis:activity',{text,type,at:Date.now()});}
 function saveStore(){try{fs.mkdirSync(path.dirname(dataPath),{recursive:true});fs.writeFileSync(dataPath,JSON.stringify(store,null,2),{mode:0o600});}catch(e){console.error('Save failed:',e.message);}}
-function loadStore(){try{const d=JSON.parse(fs.readFileSync(dataPath,'utf8'));store={settings:{...DEFAULTS,...(d.settings||{})},notes:Array.isArray(d.notes)?d.notes.slice(-100):[],reminders:Array.isArray(d.reminders)?d.reminders.slice(-100):[],history:Array.isArray(d.history)?d.history.slice(-40):[]};}catch{saveStore();}}
+function loadStore(){try{const d=JSON.parse(fs.readFileSync(dataPath,'utf8')),previous=d.settings||{};store={settings:{...DEFAULTS,...previous},notes:Array.isArray(d.notes)?d.notes.slice(-100):[],reminders:Array.isArray(d.reminders)?d.reminders.slice(-100):[],history:Array.isArray(d.history)?d.history.slice(-40):[]};if(previous.aiMode==='local'&&!previous.providerMigrationV1){store.settings.aiMode='gemini';store.settings.cloudModel='gemini-3.8-flash';}store.settings.providerMigrationV1=true;saveStore();}catch{store.settings.providerMigrationV1=true;saveStore();}}
 function getApiKey(){try{return fs.existsSync(keyPath)&&safeStorage.isEncryptionAvailable()?safeStorage.decryptString(fs.readFileSync(keyPath)):'';}catch{return'';}}
 function setApiKey(k){if(!k){try{fs.rmSync(keyPath,{force:true});}catch{}return{ok:true};}if(!safeStorage.isEncryptionAvailable())return{ok:false,message:'OS encrypted storage unavailable; API key not saved.'};try{fs.writeFileSync(keyPath,safeStorage.encryptString(k),{mode:0o600});return{ok:true};}catch{return{ok:false,message:'Could not safely store API key.'};}}
 function aliases(){if(process.platform==='darwin')return{chrome:'Google Chrome','google chrome':'Google Chrome',vscode:'Visual Studio Code','vs code':'Visual Studio Code',finder:'Finder',explorer:'Finder',safari:'Safari',edge:'Google Chrome'};if(process.platform==='win32')return{chrome:'chrome','google chrome':'chrome',vscode:'code','vs code':'code',finder:'explorer',explorer:'explorer','file explorer':'explorer',safari:'msedge',edge:'msedge'};return{};}
