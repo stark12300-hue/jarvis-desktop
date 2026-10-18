@@ -81,7 +81,7 @@ async function transcribeAudio(payload){
 }
 async function generateGeminiSpeech(text){
  const key=getApiKey();if(!key)return{ok:false,message:'Add your Gemini API key and select Gemini Cloud to use the natural JARVIS voice.'};
- const clean=String(text||'').trim().slice(0,1600);if(!clean)return{ok:false,message:'Nothing to speak.'};
+ const clean=String(text||'').trim().slice(0,750);if(!clean)return{ok:false,message:'Nothing to speak.'};
  try{
   const response=await fetch('https://generativelanguage.googleapis.com/v1beta/interactions',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({model:'gemini-3.8-flash-lite-tts',input:'Speak the following response as a calm, polished, confident personal AI assistant. Use a mature, smooth, low-mid male-presenting voice, measured pacing, precise diction, subtle pauses, and a warm but composed cinematic delivery. Speak Hindi and Hinglish naturally when present; speak English clearly with a refined neutral accent. Do not sound robotic, overdramatic, or imitate any specific actor or copyrighted character. Read only the text after RESPONSE.\nRESPONSE:\n'+clean,response_format:{type:'audio'},generation_config:{speech_config:[{voice:'Charon'}]}}),signal:AbortSignal.timeout(60000)});
   const data=await response.json();if(!response.ok)throw Error(data.error?.message||'Gemini TTS error '+response.status);
