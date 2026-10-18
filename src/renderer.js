@@ -48,7 +48,7 @@ function updateWake(){
 function stopSpeech(){if(voiceRecorder&&voiceRecorder.state!=='inactive'){try{voiceRecorder.stop();}catch{}}}
 async function startWake(){wakeEnabled=false;updateWake();}
 function runVoice(t){processingVoice=true;updateWake();runCommand(t,true).finally(()=>{processingVoice=false;updateWake();});}
-let voiceRecorder=null,voiceStream=null,voiceChunks=[];
+let voiceRecorder=null,voiceStream=null,voiceChunks=[],voiceMonitorTimer=null,voiceAudioContext=null,voiceAnalyser=null,voiceStartedAt=0,voiceLastLoudAt=0,voiceRmsBuffer=null,voiceRecordingStartedAt=0;
 async function listenOnce(){
  if(voiceRecorder&&voiceRecorder.state==='recording'){voiceRecorder.stop();return;}
  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){activity('Microphone recording is unavailable in this build. You can type a command.');return;}
@@ -63,13 +63,13 @@ async function listenOnce(){
   recorder.ondataavailable=e=>{if(e.data&&e.data.size)voiceChunks.push(e.data);};
   recorder.onerror=e=>activity('Recording error: '+(e.error?.message||'microphone failed'));
   recorder.onstop=async()=>{
-   const stream=voiceStream;voiceStream=null;
+   if(voiceMonitorTimer){clearInterval(voiceMonitorTimer);voiceMonitorTimer=null;}\n   const context=voiceAudioContext;voiceAudioContext=null;voiceAnalyser=null;voiceRmsBuffer=null;\n   if(context){try{await context.close();}catch{}}\n   const stream=voiceStream;voiceStream=null;
    if(stream)stream.getTracks().forEach(t=>t.stop());
    $('listen-once').textContent='Speak a command';
    const blob=new Blob(voiceChunks,{type:recorder.mimeType||'audio/webm'});
    voiceChunks=[];voiceRecorder=null;
    if(blob.size<1500){processingVoice=false;updateWake();activity('No clear audio captured. Please try again.');return;}
-   processingVoice=true;updateWake();activity('Transcribing audio securely through your saved OpenAI API key…');
+   processingVoice=true;updateWake();activity('Transcribing audio with the selected cloud provider…');
    try{
     const bytes=new Uint8Array(await blob.arrayBuffer());let binary='';
     for(let i=0;i<bytes.length;i+=0x8000)binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
@@ -81,10 +81,31 @@ async function listenOnce(){
    }catch(e){addMessage('assistant','Voice input failed: '+e.message);activity('Voice input failed: '+e.message);}
    finally{processingVoice=false;updateWake();}
   };
+  voiceRecordingStartedAt=Date.now();
   recorder.start();
   processingVoice=true;updateWake();
   $('listen-once').textContent='Stop recording';
-  activity('Recording microphone. Speak your command, then tap Stop recording.');
+  activity('Listening… speak now. Recording auto-stops after a short pause; tap Stop recording any time.');
+  // Auto-stop on silence, so the user does not have to press the button a second time.
+  try{
+   const AudioContextClass=window.AudioContext||window.webkitAudioContext;
+   if(AudioContextClass){
+    voiceAudioContext=new AudioContextClass();
+    const source=voiceAudioContext.createMediaStreamSource(voiceStream);
+    voiceAnalyser=voiceAudioContext.createAnalyser();voiceAnalyser.fftSize=1024;
+    source.connect(voiceAnalyser);voiceRmsBuffer=new Uint8Array(voiceAnalyser.fftSize);
+    voiceStartedAt=0;voiceLastLoudAt=0;
+    voiceMonitorTimer=setInterval(()=>{
+     if(!voiceRecorder||voiceRecorder.state!=='recording'||!voiceAnalyser||!voiceRmsBuffer)return;
+     voiceAnalyser.getByteTimeDomainData(voiceRmsBuffer);
+     let sum=0;for(let i=0;i<voiceRmsBuffer.length;i++){const v=(voiceRmsBuffer[i]-128)/128;sum+=v*v;}
+     const rms=Math.sqrt(sum/voiceRmsBuffer.length),now=Date.now();
+     if(rms>0.025){if(!voiceStartedAt)voiceStartedAt=now;voiceLastLoudAt=now;}
+     if(voiceStartedAt&&now-voiceLastLoudAt>1250&&now-voiceStartedAt>450){activity('Speech pause detected. Processing your command…');voiceRecorder.stop();}
+     if(now-(voiceRecordingStartedAt||now)>12000){activity('Maximum recording time reached. Processing…');voiceRecorder.stop();}
+    },100);
+   }
+  }catch(e){activity('Voice is recording. Tap Stop recording when you finish speaking.');}
  }catch(e){
   if(voiceStream)voiceStream.getTracks().forEach(t=>t.stop());voiceStream=null;voiceRecorder=null;processingVoice=false;updateWake();
   activity('Could not access microphone: '+e.message+'. Check System Settings → Privacy & Security → Microphone.');
