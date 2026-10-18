@@ -1,6 +1,6 @@
 {
   "name": "jarvis-desktop",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Cross-platform JARVIS voice assistant and Android companion",
   "main": "src/main.js",
   "scripts": {
@@ -33,7 +33,7 @@
       ],
       "category": "public.app-category.productivity",
       "extendInfo": {
-        "NSMicrophoneUsageDescription": "JARVIS uses the microphone when you tap Speak a command to transcribe your voice command."
+        "NSMicrophoneUsageDescription": "JARVIS uses the microphone for voice commands when you tap Speak a command."
       }
     },
     "win": {
