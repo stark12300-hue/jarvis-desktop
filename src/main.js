@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session, Tray, Menu, nativeImage } = require('electron');
+const { app, BrowserWindow, session, Tray, Menu, nativeImage, systemPreferences } = require('electron');
 const path = require('path');
 const { setupAssistant } = require('./assistant');
 let mainWindow, tray;
