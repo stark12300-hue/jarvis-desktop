@@ -93,7 +93,7 @@ async function listenOnce(){
   try{
    const AudioContextClass=window.AudioContext||window.webkitAudioContext;
    if(AudioContextClass){
-    voiceAudioContext=new AudioContextClass();
+    voiceAudioContext=new AudioContextClass();voiceAudioContext.resume().catch(()=>{});
     const source=voiceAudioContext.createMediaStreamSource(voiceStream);
     voiceAnalyser=voiceAudioContext.createAnalyser();voiceAnalyser.fftSize=1024;
     source.connect(voiceAnalyser);voiceRmsBuffer=new Uint8Array(voiceAnalyser.fftSize);
@@ -103,9 +103,9 @@ async function listenOnce(){
      voiceAnalyser.getByteTimeDomainData(voiceRmsBuffer);
      let sum=0;for(let i=0;i<voiceRmsBuffer.length;i++){const v=(voiceRmsBuffer[i]-128)/128;sum+=v*v;}
      const rms=Math.sqrt(sum/voiceRmsBuffer.length),now=Date.now();
-     if(rms>0.025){if(!voiceStartedAt)voiceStartedAt=now;voiceLastLoudAt=now;}
-     if(voiceStartedAt&&now-voiceLastLoudAt>1250&&now-voiceStartedAt>450){activity('Speech pause detected. Processing your command…');voiceRecorder.stop();}
-     if(now-(voiceRecordingStartedAt||now)>12000){activity('Maximum recording time reached. Processing…');voiceRecorder.stop();}
+     if(rms>0.018){if(!voiceStartedAt)voiceStartedAt=now;voiceLastLoudAt=now;}
+     if(voiceStartedAt&&now-voiceLastLoudAt>1500&&now-voiceStartedAt>350){activity('Speech pause detected. Processing your command…');voiceRecorder.stop();}
+     if(now-(voiceRecordingStartedAt||now)>15000){activity('Maximum recording time reached. Processing…');voiceRecorder.stop();}
     },100);
    }
   }catch(e){activity('Voice is recording. Tap Stop recording when you finish speaking.');}
