@@ -4,13 +4,13 @@ Cross-platform Electron assistant for macOS and Windows, with an Android browser
 
 ## Included
 - Hindi/English chat and command UI.
-- Local Ollama or OpenAI Cloud AI; Cloud AI requires your key and can incur API charges.
-- Voice command and “Jarvis” wake-word listener when speech recognition is available in the embedded browser/OS.
+- Local Ollama, OpenAI Cloud, or Gemini Cloud AI. Cloud providers require their own API key and may incur charges.
+- Push-to-talk voice commands using cloud transcription when Gemini or OpenAI is selected.
 - Low-power and smart listening profiles; wake listening is off by default unless enabled.
 - Allowlisted app/site commands, Google search, filename search in Downloads/Desktop/Documents.
 - On-device memory notes, reminders/notifications, Python file execution after native confirmation.
 - Android browser companion protected by a random per-launch token and QR code.
-- API key encrypted with Electron safeStorage.
+- Gemini-generated expressive TTS voice (when Gemini Cloud is selected), with system-voice fallback; a calm, polished assistant voice style, not a copy of any actor/character.\n- API key encrypted with Electron safeStorage.
 - GitHub Actions builds macOS DMG and Windows EXE installers.
 
 ## Setup
