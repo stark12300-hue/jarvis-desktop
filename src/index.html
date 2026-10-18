@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self';">
+  <title>JARVIS</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <div><h1>J.A.R.V.I.S.</h1><small>PERSONAL AI SYSTEM</small></div>
+    <span class="ready"><i></i> LOCAL INTERFACE READY</span>
+  </header>
+  <main>
+    <section class="hero">
+      <div class="orb"><div class="core">J</div><div class="halo"></div></div>
+      <h2>At your service.</h2>
+      <p>Your voice-first desktop assistant</p>
+      <aside>Starter prototype: wake-word listening and AI voice are not connected yet.</aside>
+    </section>
+    <section class="panel">
+      <h3>QUICK COMMANDS <span>SAFE ACTIONS</span></h3>
+      <div class="actions">
+        <button data-app="chrome">Open Chrome</button>
+        <button data-app="vscode">Open VS Code</button>
+        <button data-app="finder">Open Finder (Mac)</button>
+        <button data-app="explorer">Open File Explorer (Windows)</button>
+        <button data-app="safari">Open Safari (Mac)</button>
+        <button data-app="edge">Open Edge (Windows)</button>
+      </div>
+      <div class="url"><input id="url" type="url" placeholder="https://example.com"><button id="open-url">Open website</button></div>
+      <p id="output" role="status">Choose an action to test desktop control.</p>
+    </section>
+  </main>
+  <footer><span>JARVIS • DESKTOP PROTOTYPE</span><span>Microphone is not recording in this starter.</span></footer>
+  <script src="renderer.js"></script>
+</body>
+</html>
