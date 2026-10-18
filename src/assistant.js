@@ -1,7 +1,7 @@
 const {app,BrowserWindow,ipcMain,shell,safeStorage,Notification,dialog,clipboard}=require('electron');
 const path=require('path'),fs=require('fs'),os=require('os'),crypto=require('crypto');
 const {spawn}=require('child_process'),express=require('express'),QRCode=require('qrcode');
-const PORT=43127,DEFAULTS={aiMode:'local',localModel:'llama3.2',cloudModel:'gpt-4o-mini',voiceLanguage:'auto',wakeMode:'low',wakeOnLaunch:false,autoStart:false,speakResponses:true};
+const PORT=43127,DEFAULTS={aiMode:'local',localModel:'llama3.2',cloudModel:'gemini-3.8-flash',voiceLanguage:'auto',wakeMode:'low',wakeOnLaunch:false,autoStart:false,speakResponses:true};
 let dataPath,keyPath,mobileServer,mobilePort=PORT;
 const pairToken=crypto.randomBytes(32).toString('hex'),timers=new Map();
 let store={settings:{...DEFAULTS},notes:[],reminders:[],history:[]};
