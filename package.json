@@ -1,6 +1,6 @@
 {
   "name": "jarvis-desktop",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Cross-platform JARVIS voice assistant and Android companion",
   "main": "src/main.js",
   "scripts": {
