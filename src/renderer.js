@@ -63,7 +63,10 @@ async function listenOnce(){
   recorder.ondataavailable=e=>{if(e.data&&e.data.size)voiceChunks.push(e.data);};
   recorder.onerror=e=>activity('Recording error: '+(e.error?.message||'microphone failed'));
   recorder.onstop=async()=>{
-   if(voiceMonitorTimer){clearInterval(voiceMonitorTimer);voiceMonitorTimer=null;}\n   const context=voiceAudioContext;voiceAudioContext=null;voiceAnalyser=null;voiceRmsBuffer=null;\n   if(context){try{await context.close();}catch{}}\n   const stream=voiceStream;voiceStream=null;
+   if(voiceMonitorTimer){clearInterval(voiceMonitorTimer);voiceMonitorTimer=null;}
+   const context=voiceAudioContext;voiceAudioContext=null;voiceAnalyser=null;voiceRmsBuffer=null;
+   if(context){try{await context.close();}catch{}}
+   const stream=voiceStream;voiceStream=null;
    if(stream)stream.getTracks().forEach(t=>t.stop());
    $('listen-once').textContent='Speak a command';
    const blob=new Blob(voiceChunks,{type:recorder.mimeType||'audio/webm'});
