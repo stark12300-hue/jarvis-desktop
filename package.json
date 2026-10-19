@@ -4,18 +4,14 @@
   "description": "Cross-platform JARVIS voice assistant and Android companion",
   "main": "src/main.js",
   "scripts": {
-    "start": "electron .",
-    "check": "node --check src/main.js && node --check src/assistant.js && node --check src/preload.js && node --check src/renderer.js && node --check src/mobile.js",
-    "dist:mac": "electron-builder --mac dmg --publish never",
-    "dist:win": "electron-builder --win nsis --publish never"
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "node --check server.js",
+    "check": "node --check server.js"
   },
   "dependencies": {
     "express": "^4.21.2",
     "qrcode": "^1.5.4"
-  },
-  "devDependencies": {
-    "electron": "^38.2.0",
-    "electron-builder": "^26.0.12"
   },
   "build": {
     "appId": "com.jarvis.assistant",

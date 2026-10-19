@@ -1,0 +1,22 @@
+{
+  "settings": {
+    "aiMode": "gemini",
+    "localModel": "llama3.2",
+    "cloudModel": "gemini-3.8-flash",
+    "voiceLanguage": "auto",
+    "wakeMode": "low",
+    "wakeOnLaunch": false,
+    "autoStart": false,
+    "speakResponses": true,
+    "providerMigrationV1": true
+  },
+  "notes": [
+    {
+      "id": "ec76c326-f2d1-4cba-a72e-fdf5f78353ca",
+      "text": "Meeting with Tony at 10 AM",
+      "createdAt": 1792391889510
+    }
+  ],
+  "reminders": [],
+  "history": []
+}

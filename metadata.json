@@ -1,0 +1,8 @@
+{
+  "name": "JARVIS — Personal AI",
+  "description": "Bilingual personal AI assistant with natural voice, reminders, memory notes, and companion controls.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
